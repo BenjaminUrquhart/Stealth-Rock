@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+}
+repositories {
+    jcenter()
+    maven { url "https://m2.dv8tion.net/releases" }
+    maven { url "https://jitpack.io" }
+}
+group = "net.benjaminurquhart"
+mainClassName = "net.benjaminurquhart.stealthrock.Main"
+
+sourceCompatibility = '1.11'
+targetCompatibility = '1.11'
+
+sourceSets {
+    main.java.srcDirs = ['src']
+    main.resources.srcDirs = ['src']
+}
+dependencies {
+	//implementation("com.github.BenjaminUrquhart:JCH:7be66c4")
+	implementation("org.json:json:+")
+	implementation("net.dv8tion:JDA:5.0.0-beta.13")
+}
