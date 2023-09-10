@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import net.dv8tion.jda.api.JDA;
@@ -43,6 +44,15 @@ public class ModmailUtil {
 	private static final Map<String, Long> EXPIRY = Collections.synchronizedMap(new HashMap<>());
 	
 	private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(1);
+	
+	public static final Consumer<Message> TEXT_EDIT_HOOK = m -> {
+		String url = m.getAttachments().get(0).getUrl();
+		
+		m.editMessage(String.format(
+				"[View in browser](https://txt.discord.website/?txt=%s)",
+				url.substring(url.indexOf("s/") + 2, url.length() - 4)
+		)).queue();
+	};
 	
 	static {
 		final Set<String> toRemove = new HashSet<>();
@@ -161,6 +171,11 @@ public class ModmailUtil {
 	
 	public static boolean logMessage(Message msg) {
 		try {
+			RandomAccessFile fs = getLogStream(msg.getChannel().asTextChannel());
+			
+			fs.seek(8);
+			fs.writeLong(msg.getIdLong());
+			
 			String text = msg.getContentDisplay();
 			long author = msg.getAuthor().getIdLong();
 			
@@ -177,8 +192,8 @@ public class ModmailUtil {
 			if(text.isEmpty()) {
 				return true;
 			}
+			
 			byte[] bytes = text.getBytes();
-			RandomAccessFile fs = getLogStream(msg.getChannel().asTextChannel());
 			fs.seek(fs.length());
 			fs.write(NEW_MESSAGE);
 			fs.writeLong(author);
@@ -186,8 +201,7 @@ public class ModmailUtil {
 			fs.writeInt(bytes.length);
 			fs.write(bytes);
 			
-			fs.seek(8);
-			fs.writeLong(msg.getIdLong());
+
 			
 			return true;
 		}
@@ -290,18 +304,26 @@ public class ModmailUtil {
 				}
 			}
 			
+			boolean isDeleted;
 			Map<Long, User> users = new HashMap<>();
 			if(author != null) {
 				users.put(author.getIdLong(), author);
 			}
 			for(long id : messageIDs) {
 				author = users.computeIfAbsent(authors.get(id), $ -> jda.retrieveUserById($).complete());
+				isDeleted = deleted.contains(id);
 				sb.append("\r\n\r\n[");
 				sb.append(TimeUtil.getTimeCreated(id).format(DateTimeFormatter.RFC_1123_DATE_TIME));
 				sb.append("] ");
 				sb.append(author.getName());
 				sb.append("#0000 : ");
+				if(isDeleted) {
+					sb.append("``` ");
+				}
 				sb.append(messages.get(id));
+				if(isDeleted) {
+					sb.append(" ```");
+				}
 			}
 			return sb.toString().trim();
 		}
@@ -349,14 +371,7 @@ public class ModmailUtil {
 					  .queue();
 		}
 		else {
-			logChannel.sendFiles(FileUpload.fromData(logText.getBytes(), "logs.txt")).queue(m -> {
-				String url = m.getAttachments().get(0).getUrl();
-				
-				m.editMessage(String.format(
-						"[View in browser](https://txt.discord.website/?txt=%s)",
-						url.substring(url.indexOf("s/") + 2, url.length() - 4)
-				)).queue();
-			});
+			logChannel.sendFiles(FileUpload.fromData(logText.getBytes(), "logs.txt")).queue(TEXT_EDIT_HOOK);
 		}
 	}
 }

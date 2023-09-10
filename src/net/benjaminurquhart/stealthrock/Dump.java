@@ -53,7 +53,7 @@ public class Dump extends ListenerAdapter {
 					     .queue();
 				}
 				else {
-					reply.addFiles(FileUpload.fromData(text.getBytes(), "log.txt")).queue();
+					reply.addFiles(FileUpload.fromData(text.getBytes(), "log.txt")).queue(hook -> hook.retrieveOriginal().queue(ModmailUtil.TEXT_EDIT_HOOK));
 				}
 			}
 			else {
