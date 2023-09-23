@@ -48,7 +48,7 @@ public class Main {
 		}
 		
 		JDA jda = JDABuilder.createDefault(TOKEN, EnumSet.complementOf(EnumSet.of(GatewayIntent.GUILD_PRESENCES)))
-				.addEventListeners(new ModmailListener(), new Bind(), new Dump())
+				.addEventListeners(new ModmailListener(), new Bind(), new Dump(), new GetEmUp())
 				.setMemberCachePolicy(MemberCachePolicy.ALL)
 				.setBulkDeleteSplittingEnabled(true)
 				.setActivity(Activity.watching(ZWS))
@@ -67,7 +67,9 @@ public class Main {
 
 				Commands.slash("dumpid", "Dumps the log for the given modmail channel ID.")
 						.addOption(OptionType.STRING, "channel", "Channel ID", false)
-						.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
+						.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+						
+				Commands.slash("getemup", "Get those rocks up.")
 							
 		).queue();
 	}

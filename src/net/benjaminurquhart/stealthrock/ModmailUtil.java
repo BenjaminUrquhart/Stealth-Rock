@@ -126,10 +126,15 @@ public class ModmailUtil {
 	private static RandomAccessFile getLogStream(long guildID, long channelID) {
 		return FILESTREAMS.computeIfAbsent(Long.toUnsignedString(channelID), $ -> {
 			try {
-				RandomAccessFile fs = new RandomAccessFile(getLogFile(guildID, channelID), "rwd");
+				File file = getLogFile(guildID, channelID);
+				boolean initialize = !file.exists();
+				
+				RandomAccessFile fs = new RandomAccessFile(file, "rwd");
 				EXPIRY.put($, (System.currentTimeMillis() / 1000) + 300L);
-				fs.writeLong(-1);
-				fs.writeLong(-1);
+				if(initialize) {
+					fs.writeLong(-1);
+					fs.writeLong(-1);
+				}
 				return fs;
 			}
 			catch(Exception e) {
