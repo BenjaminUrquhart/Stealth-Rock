@@ -18,18 +18,18 @@ public class Bind extends ListenerAdapter {
 		ReplyCallbackAction reply = event.deferReply(true);
 		
 		if(!event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-			reply.addContent("You do not have permission to use this command.").queue();
+			reply.addContent("You do not have permission to use this command.").setEphemeral(true).queue();
 			return;
 		}
 		
 		GuildChannelUnion option = event.getOption("channel").getAsChannel();
 		if(option.getType() != ChannelType.TEXT) {
-			reply.addContent("Channel type " + option.getType() + " not allowed").queue();
+			reply.addContent("Channel type " + option.getType() + " not allowed").setEphemeral(true).queue();
 			return;
 		}
 		TextChannel channel = option.asTextChannel();
 		try {
-			if(ModmailUtil.setLogChannel(channel)) {
+			if(Config.setLogChannel(channel)) {
 				reply.addContent("Log channel set to " + channel.getAsMention()).queue();
 			}
 			else {

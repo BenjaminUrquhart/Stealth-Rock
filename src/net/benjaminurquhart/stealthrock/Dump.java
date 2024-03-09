@@ -19,7 +19,7 @@ public class Dump extends ListenerAdapter {
 		ReplyCallbackAction reply = event.deferReply(false);
 		
 		if(!event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-			reply.addContent("You do not have permission to use this command.").queue();
+			reply.addContent("You do not have permission to use this command.").setEphemeral(true).queue();
 			return;
 		}
 		
@@ -30,7 +30,7 @@ public class Dump extends ListenerAdapter {
 			OptionMapping option = event.getOption("channel");
 			if(option.getType() == OptionType.CHANNEL)  {
 				if(option.getChannelType() != ChannelType.TEXT) {
-					reply.addContent("Only text channels are supported.").queue();
+					reply.addContent("Only text channels are supported.").setEphemeral(true).queue();
 					return;
 				}
 				id = option.getAsChannel().getIdLong();
@@ -40,7 +40,7 @@ public class Dump extends ListenerAdapter {
 					id = Long.parseUnsignedLong(option.getAsString());
 				}
 				catch(NumberFormatException e) {
-					reply.addContent("Invalid channel ID").queue();
+					reply.addContent("Invalid channel ID").setEphemeral(true).queue();
 					return;
 				}
 				
@@ -53,7 +53,7 @@ public class Dump extends ListenerAdapter {
 					     .queue();
 				}
 				else {
-					reply.addFiles(FileUpload.fromData(text.getBytes(), "log.txt")).queue(hook -> hook.retrieveOriginal().queue(ModmailUtil.TEXT_EDIT_HOOK));
+					reply.addFiles(FileUpload.fromData(text.getBytes(), "log.txt")).addContent(ModmailUtil.getMarkdownUrl(guildID, id)).queue();
 				}
 			}
 			else {

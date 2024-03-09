@@ -1,9 +1,7 @@
 package net.benjaminurquhart.stealthrock;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.ExecutionException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,40 +23,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public class ModmailListener extends ListenerAdapter {
 	
 	private static final Pattern DUMP_REGEX = Pattern.compile("<@!?(\\d+)>\\s+dump\\s+(\\d+)");
-	
-	private void resumeLoggingChannels(Guild guild) {
-		for(TextChannel channel : guild.getTextChannels()) {
-			if(ModmailUtil.isModmailChannel(channel)) {
-				try {
-					if(!ModmailUtil.hasLogFile(channel)) {
-						ModmailUtil.createLogFile(channel);
-					}
-					backupMissingMessages(channel);
-				}
-				catch(Exception e) {
-					channel.sendMessage("Failed to resume logging this channel after restart: " + e).queue();
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	private void backupMissingMessages(TextChannel channel) throws IOException, InterruptedException, ExecutionException {
-		long last = ModmailUtil.getLastRecordedMessageID(channel);
-		Stack<Message> stack = new Stack<>();
-		if(last == -1) {
-			last = 0;
-		}
-		final long limit = last;
-		List<Message> history = channel.getIterableHistory().takeWhileAsync(m -> m.getIdLong() != limit).get();
-		long self = channel.getJDA().getSelfUser().getIdLong();
-		for(Message msg : history) {
-			if(msg.getIdLong() == limit || msg.getAuthor().getIdLong() == self) continue;
-			stack.push(msg);
-		}
-		while(!stack.isEmpty()) {
-			ModmailUtil.logMessage(stack.pop());
-		}
-	}
 
 	@Override
 	public void onChannelCreate(ChannelCreateEvent event) {
@@ -69,7 +33,7 @@ public class ModmailListener extends ListenerAdapter {
 		if(ModmailUtil.isModmailChannel(channel)) {
 			try {
 				if(ModmailUtil.createLogFile(channel)) {
-					channel.sendMessage("Message logging started. Attachments will **not** be saved.").queue();
+					channel.sendMessage("Message logging started.").queue();
 				}
 				else {
 					channel.sendMessage("Failed to start logging. **Please manually archive this channel before closing this ticket.**").queue();
@@ -87,7 +51,7 @@ public class ModmailListener extends ListenerAdapter {
 		if(!event.isFromGuild() || !ModmailUtil.isModmailChannel(event.getChannel())) {
 			return;
 		}
-		TextChannel logChannel = ModmailUtil.getLogChannel(event.getGuild());
+		TextChannel logChannel = Config.getLogChannel(event.getGuild());
 		TextChannel channel = event.getChannel().asTextChannel();
 		
 		ModmailUtil.sendLogs(channel.getIdLong(), logChannel);
@@ -132,13 +96,13 @@ public class ModmailListener extends ListenerAdapter {
 	
 	@Override
 	public void onGuildJoin(GuildJoinEvent event) {
-		resumeLoggingChannels(event.getGuild());
+		GuildUtil.refreshGuildData(event.getGuild());
 	}
 	
 	@Override
 	public void onReady(ReadyEvent event) {
 		for(Guild guild : event.getJDA().getGuilds()) {
-			resumeLoggingChannels(guild);
+			GuildUtil.refreshGuildData(guild);
 		}
 	}
 }

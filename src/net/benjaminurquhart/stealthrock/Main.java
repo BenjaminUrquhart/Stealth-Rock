@@ -7,6 +7,7 @@ import java.util.EnumSet;
 
 import org.json.JSONObject;
 
+import fi.iki.elonen.router.RouterNanoHTTPD;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
@@ -17,11 +18,16 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
-public class Main {
+public class Main extends RouterNanoHTTPD {
 	
 	public static final String ZWS = new StringBuilder().appendCodePoint(0x17b5).toString();
 	
 	private static final String TOKEN;
+	
+	public static final String BASE_URL;
+	public static final int PORT;
+	
+	public static JDA jda;
 	
 	
 	// "The final field TOKEN may already have been assigned" WHERE
@@ -34,11 +40,20 @@ public class Main {
 			e.printStackTrace();
 		}
 		if(json == null) {
+			PORT = 8888;
 			TOKEN = null;
+			BASE_URL = "http://localhost:8888/";
 		}
 		else {
-			TOKEN = new JSONObject(json).optString("token", null);
+			JSONObject config = new JSONObject(json);
+			PORT = config.optInt("port", 8888);
+			TOKEN = config.optString("token", null);
+			BASE_URL = config.optString("base_url", "http://localhost:8888/");
 		}
+	}
+	
+	public Main() {
+		super(PORT);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -47,7 +62,9 @@ public class Main {
 			return;
 		}
 		
-		JDA jda = JDABuilder.createDefault(TOKEN, EnumSet.complementOf(EnumSet.of(GatewayIntent.GUILD_PRESENCES)))
+		//System.setProperty("org.slf4j.Logger.defaultLogLevel", "trace");
+		
+		jda = JDABuilder.createDefault(TOKEN, EnumSet.complementOf(EnumSet.of(GatewayIntent.GUILD_PRESENCES)))
 				.addEventListeners(new ModmailListener(), new Bind(), new Dump(), new GetEmUp())
 				.setMemberCachePolicy(MemberCachePolicy.ALL)
 				.setBulkDeleteSplittingEnabled(true)
@@ -68,10 +85,17 @@ public class Main {
 				Commands.slash("dumpid", "Dumps the log for the given modmail channel ID.")
 						.addOption(OptionType.STRING, "channel", "Channel ID", false)
 						.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+					
+				/*
+				Commands.slash("relog", "Recreates the internal logfile for this modmail thread.")
+						.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),*/
 						
 				Commands.slash("getemup", "Get those rocks up.")
-							
 		).queue();
+		
+		Main server = new Main();
+		server.setNotFoundHandler(WebHandler.class);
+		server.start(RouterNanoHTTPD.SOCKET_READ_TIMEOUT, false);
 	}
 
 }
