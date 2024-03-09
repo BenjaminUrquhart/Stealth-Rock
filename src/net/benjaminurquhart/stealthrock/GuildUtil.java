@@ -1,9 +1,6 @@
 package net.benjaminurquhart.stealthrock;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 
@@ -12,12 +9,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 public class GuildUtil {
-	
-	public static class InviteData {
-		
-	}
-	
-	public static final Map<String, Set<InviteData>> INVITE_DATA = new HashMap<>(); 
 	
 	public static void refreshGuildData(Guild guild) {
 		for(TextChannel channel : guild.getTextChannels()) {

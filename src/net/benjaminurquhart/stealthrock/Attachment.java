@@ -78,13 +78,13 @@ public class Attachment {
 		DataObject ret = action.complete(), entry;
 		DataArray arr = ret.getArray("refreshed_urls");
 		int len = arr.length();
+		Attachment a;
 		for(int i = 0; i < len; i++) {
 			entry = arr.getObject(i);
-			mapping.get(entry.getString("original")).url = entry.getString("refreshed");
-		}
-		for(Object obj : expired) {
+			a = mapping.get(entry.getString("original"));
+			a.url = entry.getString("refreshed");
 			try {
-				((Attachment)obj).save();
+				a.save();
 			}
 			catch(Exception e) {
 				e.printStackTrace();

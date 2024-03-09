@@ -73,7 +73,7 @@ public class ModmailUtil {
 					e.printStackTrace();
 				}
 			}
-		}, 60, 60, TimeUnit.SECONDS);
+		}, 10, 10, TimeUnit.SECONDS);
 	}
 	
 	
@@ -435,7 +435,22 @@ public class ModmailUtil {
 				} break;
 				}
 			}
-			
+			try {
+				Set<Attachment> needsRefresh = new HashSet<>();
+				for(LoggedMessage m : out) {
+					for(Attachment a : m.attachments) {
+						if(a.expired()) {
+							needsRefresh.add(a);
+						}
+					}
+				}
+				if(!needsRefresh.isEmpty()) {
+					Attachment.refreshBulk(jda, needsRefresh);
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
 			return out;
 		}
 		catch(Exception e) {
