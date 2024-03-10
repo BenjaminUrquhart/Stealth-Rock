@@ -73,7 +73,7 @@ public class ModmailUtil {
 					e.printStackTrace();
 				}
 			}
-		}, 10, 10, TimeUnit.SECONDS);
+		}, 1, 1, TimeUnit.SECONDS);
 	}
 	
 	
@@ -125,38 +125,55 @@ public class ModmailUtil {
 	}
 	
 	private static RandomAccessFile getLogStream(long guildID, long channelID) {
-		return FILESTREAMS.computeIfAbsent(Long.toUnsignedString(channelID), $ -> {
+		String key = Long.toUnsignedString(channelID);
+		File file = getLogFile(guildID, channelID);
+		boolean initialize = !file.exists();
+		RandomAccessFile out = getStream(file, key);
+		if(initialize) {
 			try {
-				File file = getLogFile(guildID, channelID);
-				boolean initialize = !file.exists();
-				
-				RandomAccessFile fs = new RandomAccessFile(file, "rwd");
-				EXPIRY.put($, (System.currentTimeMillis() / 1000) + 300L);
-				if(initialize) {
-					fs.writeLong(-1);
-					fs.writeLong(-1);
-				}
-				return fs;
+				out.writeLong(-1);
+				out.writeLong(-1);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-			return null;
-		});
+		}
+
+		return out;
 	}
 	
 	public static RandomAccessFile getStream(File file) {
-		return FILESTREAMS.computeIfAbsent(file.getAbsolutePath(), $ -> {
+		return getStream(file, file.getAbsolutePath());
+	}
+	
+	public static RandomAccessFile getStream(File file, String key) {
+		return getStream(file, key, 300L);
+	}
+	
+	public static RandomAccessFile getStream(File file, long timeout) {
+		return getStream(file, file.getAbsolutePath(), timeout);
+	}
+	
+	public static RandomAccessFile getStream(File file, String key, long timeout) {
+		RandomAccessFile out = FILESTREAMS.computeIfAbsent(key, $ -> {
 			try {
-				RandomAccessFile fs = new RandomAccessFile(file, "rwd");
-				EXPIRY.put($, (System.currentTimeMillis() / 1000) + 15L);
-				return fs;
+				return new RandomAccessFile(file, "rwd");
 			}
 			catch(Exception e) {
 				e.printStackTrace();
 			}
 			return null;
 		});
+		if(out != null) {
+			EXPIRY.put(key, (System.currentTimeMillis() / 1000) + timeout);
+			try {
+				out.seek(0);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return out;
 	}
 	
 	public static long getLastRecordedMessageID(TextChannel channel) throws IOException {
@@ -262,7 +279,7 @@ public class ModmailUtil {
 				fs.write(attachments.size());
 				RandomAccessFile attachFile;
 				for(Attachment a : attachments) {
-					attachFile = getStream(new File("data/" + a.uuid));
+					attachFile = getStream(new File("data/" + a.uuid), 5L);
 					bytes = a.url.getBytes("utf-8");
 					attachFile.write(a.type.ordinal());
 					attachFile.writeInt(bytes.length);

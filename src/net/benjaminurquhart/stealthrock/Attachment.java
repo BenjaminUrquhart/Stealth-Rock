@@ -42,7 +42,7 @@ public class Attachment {
 		if(!file.exists()) {
 			return null;
 		}
-		RandomAccessFile fs = ModmailUtil.getStream(file);
+		RandomAccessFile fs = ModmailUtil.getStream(file, 5L);
 		fs.seek(0);
 		
 		Type type = Type.values()[fs.read()];

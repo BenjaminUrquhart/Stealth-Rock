@@ -46,7 +46,7 @@ public class WebHandler extends GeneralHandler {
 									link().withRel("stylesheet").withHref("https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.min.css")
 							),
 							body(
-									h2("Ticket opened by " + name),
+									h2(String.format("Ticket opened by %s (%s)", name, Long.toUnsignedString(ownerID))),
 									br(),
 									each(messages, msg -> {
 										User user = users.computeIfAbsent(msg.authorID, $ -> jda.retrieveUserById($).complete());
