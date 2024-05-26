@@ -1,6 +1,6 @@
 package net.benjaminurquhart.stealthrock.commands;
 
-import net.benjaminurquhart.stealthrock.ModmailUtil;
+import net.benjaminurquhart.stealthrock.util.ModmailUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

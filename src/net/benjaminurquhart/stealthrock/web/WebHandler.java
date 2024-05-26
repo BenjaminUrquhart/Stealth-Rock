@@ -23,7 +23,7 @@ import fi.iki.elonen.router.RouterNanoHTTPD.GeneralHandler;
 import fi.iki.elonen.router.RouterNanoHTTPD.UriResource;
 import net.benjaminurquhart.stealthrock.LoggedMessage;
 import net.benjaminurquhart.stealthrock.Main;
-import net.benjaminurquhart.stealthrock.ModmailUtil;
+import net.benjaminurquhart.stealthrock.util.ModmailUtil;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;

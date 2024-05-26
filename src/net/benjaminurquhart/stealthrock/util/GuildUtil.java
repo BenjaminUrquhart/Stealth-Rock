@@ -1,4 +1,4 @@
-package net.benjaminurquhart.stealthrock;
+package net.benjaminurquhart.stealthrock.util;
 
 import java.io.IOException;
 import java.util.Stack;

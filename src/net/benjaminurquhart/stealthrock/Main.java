@@ -2,7 +2,9 @@ package net.benjaminurquhart.stealthrock;
 
 import java.io.File;
 import java.io.IOException;
+
 import java.nio.file.Files;
+
 import java.util.Base64;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -19,12 +21,10 @@ import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import fi.iki.elonen.router.RouterNanoHTTPD;
-import net.benjaminurquhart.stealthrock.commands.Bind;
-import net.benjaminurquhart.stealthrock.commands.Dump;
-import net.benjaminurquhart.stealthrock.commands.GetEmUp;
-import net.benjaminurquhart.stealthrock.web.AuthHandler;
-import net.benjaminurquhart.stealthrock.web.LogoutHandler;
-import net.benjaminurquhart.stealthrock.web.WebHandler;
+
+import net.benjaminurquhart.stealthrock.commands.*;
+import net.benjaminurquhart.stealthrock.web.*;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;

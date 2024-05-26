@@ -1,4 +1,4 @@
-package net.benjaminurquhart.stealthrock;
+package net.benjaminurquhart.stealthrock.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +18,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import net.benjaminurquhart.stealthrock.Attachment;
+import net.benjaminurquhart.stealthrock.LoggedMessage;
+import net.benjaminurquhart.stealthrock.Main;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.EmbedType;
 import net.dv8tion.jda.api.entities.Message;

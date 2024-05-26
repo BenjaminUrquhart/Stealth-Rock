@@ -1,5 +1,6 @@
 package net.benjaminurquhart.stealthrock.commands;
 
+import net.benjaminurquhart.stealthrock.util.Config;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
