@@ -19,6 +19,12 @@ import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import fi.iki.elonen.router.RouterNanoHTTPD;
+import net.benjaminurquhart.stealthrock.commands.Bind;
+import net.benjaminurquhart.stealthrock.commands.Dump;
+import net.benjaminurquhart.stealthrock.commands.GetEmUp;
+import net.benjaminurquhart.stealthrock.web.AuthHandler;
+import net.benjaminurquhart.stealthrock.web.LogoutHandler;
+import net.benjaminurquhart.stealthrock.web.WebHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;

@@ -1,4 +1,4 @@
-package net.benjaminurquhart.stealthrock;
+package net.benjaminurquhart.stealthrock.web;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -16,6 +16,7 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 import fi.iki.elonen.NanoHTTPD.Response;
 import fi.iki.elonen.router.RouterNanoHTTPD.GeneralHandler;
 import fi.iki.elonen.router.RouterNanoHTTPD.UriResource;
+import net.benjaminurquhart.stealthrock.Main;
 
 public class AuthHandler extends GeneralHandler {
 
@@ -143,10 +144,12 @@ public class AuthHandler extends GeneralHandler {
 	protected static void deleteUserData(UUID uuid) {
 		try {
 			JSONObject json = readUserData(uuid);
-			if(json.has("logout")) {
-				Files.delete(Path.of("data", "user", "logout", json.getString("logout")));
+			if(json != null) {
+				if(json.has("logout")) {
+					Files.delete(Path.of("data", "user", "logout", json.getString("logout")));
+				}
+				Files.delete(Path.of("data", "user", uuid.toString()));
 			}
-			Files.delete(Path.of("data", "user", uuid.toString()));
 		}
 		catch(Exception e) {
 			e.printStackTrace();

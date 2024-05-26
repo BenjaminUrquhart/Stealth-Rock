@@ -1,4 +1,4 @@
-package net.benjaminurquhart.stealthrock;
+package net.benjaminurquhart.stealthrock.web;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -14,6 +14,7 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 import fi.iki.elonen.NanoHTTPD.Response;
 import fi.iki.elonen.router.RouterNanoHTTPD.GeneralHandler;
 import fi.iki.elonen.router.RouterNanoHTTPD.UriResource;
+import net.benjaminurquhart.stealthrock.Main;
 
 public class LogoutHandler extends GeneralHandler {
 	
@@ -50,7 +51,10 @@ public class LogoutHandler extends GeneralHandler {
 			finally {
 				AuthHandler.deleteUserData(id);
 			}
-			return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "text/html", "Successfully signed out");
+			cookies.delete("id");
+			Response res = NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "text/html", "Successfully signed out");
+			cookies.unloadQueue(res);
+			return res;
 		}
 		catch(Exception e) {
 			e.printStackTrace();

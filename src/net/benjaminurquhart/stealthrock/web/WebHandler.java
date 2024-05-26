@@ -1,9 +1,8 @@
-package net.benjaminurquhart.stealthrock;
+package net.benjaminurquhart.stealthrock.web;
 
 import java.io.File;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,9 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 import fi.iki.elonen.NanoHTTPD.Response;
 import fi.iki.elonen.router.RouterNanoHTTPD.GeneralHandler;
 import fi.iki.elonen.router.RouterNanoHTTPD.UriResource;
+import net.benjaminurquhart.stealthrock.LoggedMessage;
+import net.benjaminurquhart.stealthrock.Main;
+import net.benjaminurquhart.stealthrock.ModmailUtil;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -41,7 +43,7 @@ public class WebHandler extends GeneralHandler {
 	public Response get(UriResource uriResource, Map<String, String> urlParams, IHTTPSession session) {
 		long start = System.currentTimeMillis();
 		String url = session.getUri();
-		System.out.println(url);
+		//System.out.println(url);
 		Matcher matcher = URL_REGEX.matcher(url);
 		CookieHandler cookies = session.getCookies();
 		String logoutLink = "/logout";
@@ -84,11 +86,10 @@ public class WebHandler extends GeneralHandler {
 						try(com.github.scribejava.core.model.Response response = Main.OAUTH_SERVICE.execute(request)) {
 							int code = response.getCode();
 							JSONObject body = new JSONObject(response.getBody());
-							System.out.println(body);
+							//System.out.println(body);
 							if(response.getCode() == 200) {
 								member = server.retrieveMemberById(body.getString("id")).complete();
 								if(member != null) {
-									System.out.println(member.getUser());
 									authorized = member.hasPermission(Permission.MESSAGE_MANAGE);
 									User user = member.getUser();
 									if(user.getGlobalName() == null) {
@@ -99,8 +100,16 @@ public class WebHandler extends GeneralHandler {
 									}
 									logoutLink += "?id=" + AuthHandler.getLogoutToken(uuid);
 								}
+								else if(body.optString("global_name", null) != null){
+									username = body.getString("global_name") + " (" + body.getString("username") + ")";
+								}
+								else {
+									username = body.getString("username");
+								}
+								System.out.printf("[%s] %s (%s) accessed %s (server: %s, authorized: %s)\n", OffsetDateTime.now(), username, body.getString("id"), matcher.group(0), server.getName(), authorized);
 							}
 							else {
+								AuthHandler.deleteUserData(uuid);
 								System.err.println("Error getting user info: " + code);
 								System.err.println(body);
 								token = null;
@@ -122,7 +131,7 @@ public class WebHandler extends GeneralHandler {
 							"Redirecting for login..."
 					);
 					res.addHeader("Location", Main.OAUTH_SERVICE.getAuthorizationUrl(uuid.toString() + "=" + matcher.group(1) + "=" + matcher.group(2)));
-					cookies.set("id", uuid.toString(), (int)Instant.now().plus(400, ChronoUnit.DAYS).getEpochSecond());
+					cookies.set("id", uuid.toString() + "; Secure; HttpOnly", 7);
 				}
 				else if(!authorized) {
 					res = NanoHTTPD.newFixedLengthResponse(
@@ -130,7 +139,7 @@ public class WebHandler extends GeneralHandler {
 							"text/html", 
 							"Unauthorized<br><a herf='" + logoutLink + "'>Log out</a>"
 					);
-					cookies.set("id", uuid.toString(), (int)Instant.now().plus(400, ChronoUnit.DAYS).getEpochSecond());
+					cookies.set("id", uuid.toString() + "; Secure; HttpOnly", 7);
 				}
 				else {
 					File file = new File("data/" + matcher.group(0));
@@ -156,6 +165,9 @@ public class WebHandler extends GeneralHandler {
 													p(msg.text),
 													br(),
 													each(msg.attachments, a -> {
+														if(a == null) {
+															return p("[missing attachment]").withStyle("color: #7f7f7f");
+														}
 														switch(a.getType()) {
 														case IMAGE: return img().withSrc(a.url);
 														case VIDEO: return video(source().withSrc(a.url).withType(a.mediaType));
@@ -176,6 +188,7 @@ public class WebHandler extends GeneralHandler {
 			}
 			catch(Exception e) {
 				e.printStackTrace();
+				res = NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "text/html", e.toString());
 			}
 		}
 		cookies.unloadQueue(res);

@@ -456,7 +456,7 @@ public class ModmailUtil {
 				Set<Attachment> needsRefresh = new HashSet<>();
 				for(LoggedMessage m : out) {
 					for(Attachment a : m.attachments) {
-						if(a.expired()) {
+						if(a != null & a.expired()) {
 							needsRefresh.add(a);
 						}
 					}
